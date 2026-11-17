@@ -1,0 +1,16 @@
+{
+  "name": "SparkEnglish - 中学英語マスター＆AI英会話",
+  "short_name": "SparkEnglish",
+  "description": "中学英語15単元とハンズフリーAI英会話で話せる英語を。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f9f4",
+  "theme_color": "#58cc02",
+  "lang": "ja",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

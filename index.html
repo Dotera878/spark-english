@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>SparkEnglish｜中学英語マスター＆AI英会話</title>
+  <meta name="description" content="中学英語の重要文法15単元を音読・瞬間英作文でマスターし、ハンズフリーAI英会話で話す力を鍛える学習アプリ。">
+  <meta name="theme-color" content="#58cc02">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SparkEnglish">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- アップデートバナー -->
+  <div id="update-banner" class="update-banner hidden" role="alert">
+    <span>✨最新版が公開されました！</span>
+    <button id="update-now-btn" class="btn btn-small btn-white">🔄 今すぐ更新</button>
+  </div>
+
+  <header class="app-header">
+    <div class="brand"><span class="logo">SE</span><span class="brand-name">SparkEnglish</span></div>
+    <div class="stats">
+      <span class="stat" title="連続日数">🔥 <b id="stat-streak">0</b></span>
+      <span class="stat" title="XP">⚡ <b id="stat-xp">0</b></span>
+      <span class="stat" title="マスター度">👑 <b id="stat-master">0%</b></span>
+    </div>
+    <div class="auth">
+      <button id="login-btn" class="btn btn-small btn-outline">Googleでログイン</button>
+      <div id="user-box" class="user-box hidden">
+        <img id="user-avatar" alt="ユーザーアイコン" referrerpolicy="no-referrer">
+        <button id="logout-btn" class="btn btn-small btn-ghost">ログアウト</button>
+      </div>
+    </div>
+  </header>
+  <div id="mode-label" class="mode-label">👤 ゲストモード（この端末に保存）</div>
+
+  <main id="main">
+    <!-- ホーム -->
+    <section id="view-home" class="view active" aria-labelledby="home-title">
+      <h1 id="home-title" class="hero-title">今日も英語でスパークしよう！✨</h1>
+      <div class="card week-card">
+        <h2>📅 今週のスタンプ</h2>
+        <div id="week-calendar" class="week-calendar"></div>
+      </div>
+      <div class="card progress-card">
+        <h2>👑 マスター度</h2>
+        <div class="progress-bar"><div id="master-bar" class="progress-fill"></div></div>
+        <p id="master-text" class="muted"></p>
+        <button id="continue-btn" class="btn btn-primary btn-block">▶ 続きから学習する</button>
+      </div>
+      <div class="card">
+        <h2>🗣️ 話す練習</h2>
+        <p class="muted">ハンズフリーでAIと英会話。話しかけるだけで会話が続きます。</p>
+        <button class="btn btn-blue btn-block" data-goto="talk">AI英会話を始める</button>
+      </div>
+    </section>
+
+    <!-- ロードマップ -->
+    <section id="view-roadmap" class="view" aria-labelledby="roadmap-title">
+      <h2 id="roadmap-title" class="section-title">🗺️ 中学英語ロードマップ</h2>
+      <div id="roadmap" class="roadmap"></div>
+    </section>
+
+    <!-- 単元 -->
+    <section id="view-unit" class="view" aria-live="polite">
+      <button id="unit-back" class="btn btn-ghost btn-small">← ロードマップへ</button>
+      <div id="unit-content"></div>
+    </section>
+
+    <!-- AI会話 -->
+    <section id="view-talk" class="view" aria-labelledby="talk-title">
+      <div class="talk-head">
+        <h2 id="talk-title" class="section-title">🎧 ハンズフリーAI英会話</h2>
+        <button id="ai-settings-btn" class="btn btn-small btn-outline">🔑 AI設定</button>
+      </div>
+      <p id="ai-mode-text" class="muted"></p>
+      <div id="theme-select" class="theme-select">
+        <button class="theme-btn active" data-theme="chat">💬 雑談</button>
+        <button class="theme-btn" data-theme="cafe">☕ カフェ</button>
+        <button class="theme-btn" data-theme="travel">✈️ 旅行</button>
+        <button class="theme-btn" data-theme="hobby">🎨 趣味</button>
+      </div>
+      <div id="chat-log" class="chat-log"></div>
+      <div id="talk-status" class="talk-status">テーマを選んで「会話を始める」を押してね</div>
+      <div class="talk-controls">
+        <button id="talk-start" class="btn btn-primary btn-big">🎙️ 会話を始める</button>
+        <button id="talk-stop" class="btn btn-red btn-big hidden">⏹ 会話を終了</button>
+      </div>
+      <form id="talk-text-form" class="talk-text-form">
+        <input id="talk-text" type="text" placeholder="声が出せない時はここに英語で入力…" autocomplete="off">
+        <button class="btn btn-blue btn-small" type="submit">送信</button>
+      </form>
+    </section>
+
+    <!-- 復習帳 -->
+    <section id="view-fav" class="view" aria-labelledby="fav-title">
+      <h2 id="fav-title" class="section-title">⭐ お気に入り復習帳</h2>
+      <div id="fav-list"></div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <div class="dev-tools">
+      <button id="next-day-btn" class="btn btn-small btn-ghost">🧪 翌日へ送る</button>
+      <button id="reset-btn" class="btn btn-small btn-ghost">🗑️ 記録を初期化</button>
+      <button id="check-update-btn" class="btn btn-small btn-ghost">🔄 更新を確認</button>
+    </div>
+    <p class="muted small">SparkEnglish v<span id="app-version"></span></p>
+  </footer>
+
+  <nav class="tabbar" aria-label="メインメニュー">
+    <button class="tab active" data-goto="home"><span>🏠</span>ホーム</button>
+    <button class="tab" data-goto="roadmap"><span>🗺️</span>ロードマップ</button>
+    <button class="tab" data-goto="talk"><span>🎧</span>AI会話</button>
+    <button class="tab" data-goto="fav"><span>⭐</span>復習帳</button>
+  </nav>
+
+  <!-- AI設定モーダル -->
+  <div id="ai-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title">
+    <div class="modal-box">
+      <h3 id="ai-modal-title">🔑 AI設定</h3>
+      <p class="muted small">ご自身のGemini APIキーを入力してください。キーはこの端末のlocalStorageにのみ保存され、Googleのサーバー以外には送信されません。</p>
+      <input id="api-key-input" type="password" placeholder="Gemini APIキー" autocomplete="off">
+      <div class="modal-actions">
+        <button id="api-key-clear" class="btn btn-small btn-ghost">削除</button>
+        <button id="api-key-cancel" class="btn btn-small btn-outline">閉じる</button>
+        <button id="api-key-save" class="btn btn-small btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script>window.APP_VERSION = "1.0.0";</script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
