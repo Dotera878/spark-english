@@ -2,7 +2,7 @@
    SparkEnglish - app.js
    ※ APIキー類はコードに直書きしないこと。
    ========================================================= */
-const APP_VERSION = "1.0.1";
+const APP_VERSION = "1.1.0";
 
 /* ---------- Firebase設定 ----------
    Firebaseコンソールの「ウェブアプリ設定」の値。
@@ -22,6 +22,7 @@ const FB_BASE = `https://www.gstatic.com/firebasejs/${FB_VER}`;
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent";
 const LS_KEY = "sparkenglish_state_v1";
 const LS_API = "sparkenglish_gemini_key";
+const LS_ENTRY = "sparkenglish_entry"; // 入り口での選択："guest" | "google"
 
 /* ---------- 単元データ（全15単元×3フレーズ） ---------- */
 const UNITS = [
@@ -550,10 +551,30 @@ function localReply(text) {
   return pick(["I see! Can you tell me more?", "That's interesting! Why do you think so?", "Really? What do you like about it?"]);
 }
 
+/* ---------- 入り口（ウェルカム）画面 ---------- */
+// mode: "choose"（選択画面） / "loading"（ログイン確認中） / "hide"（アプリ本体を表示）
+function setWelcome(mode) { document.documentElement.dataset.welcome = mode; }
+const welcomeMode = () => document.documentElement.dataset.welcome;
+function enterAsGuest() {
+  localStorage.setItem(LS_ENTRY, "guest");
+  setWelcome("hide"); go("home");
+  toast("ゲストモードでスタート！記録はこの端末に保存されます👤");
+}
+async function enterWithGoogle() {
+  const p = login();            // ポップアップブロック回避のためクリック直後に呼ぶ
+  if (fb) setWelcome("loading");
+  const ok = await p;
+  if (!ok && !currentUser) setWelcome("choose");
+}
+
 /* ---------- Firebase（設定済みの場合のみ動的読み込み） ---------- */
 const fbConfigured = !Object.values(firebaseConfig).some(v => String(v).includes("YOUR_"));
 async function initFirebase() {
-  if (!fbConfigured) { $("#login-btn").title = "Firebase未設定のためゲストモードで動作中"; return; }
+  if (!fbConfigured) {
+    $("#login-btn").title = "Firebase未設定のためゲストモードで動作中";
+    if (welcomeMode() === "loading") setWelcome("choose");
+    return;
+  }
   try {
     const [{ initializeApp }, auth, fs] = await Promise.all([
       import(`${FB_BASE}/firebase-app.js`), import(`${FB_BASE}/firebase-auth.js`), import(`${FB_BASE}/firebase-firestore.js`),
@@ -561,13 +582,23 @@ async function initFirebase() {
     const app = initializeApp(firebaseConfig);
     fb = { auth: auth.getAuth(app), db: fs.getFirestore(app), authMod: auth, fs };
     auth.onAuthStateChanged(fb.auth, onAuth);
-  } catch (e) { console.warn("Firebase初期化失敗。ゲストモードで動作します", e); fb = null; }
+  } catch (e) {
+    console.warn("Firebase初期化失敗。ゲストモードで動作します", e); fb = null;
+    if (welcomeMode() === "loading") setWelcome("choose");
+  }
 }
 async function onAuth(user) {
   currentUser = user;
   $("#login-btn").classList.toggle("hidden", !!user);
   $("#user-box").classList.toggle("hidden", !user);
-  if (!user) { $("#mode-label").textContent = "👤 ゲストモード（この端末に保存）"; return; }
+  if (!user) {
+    $("#mode-label").textContent = "👤 ゲストモード（この端末に保存）";
+    // 前回ログインしていたのにセッションが無い（期限切れ等）→ 入り口へ
+    if (localStorage.getItem(LS_ENTRY) === "google") { localStorage.removeItem(LS_ENTRY); setWelcome("choose"); }
+    return;
+  }
+  localStorage.setItem(LS_ENTRY, "google");
+  setWelcome("hide");
   $("#user-avatar").src = user.photoURL || "icon-192.png";
   $("#mode-label").textContent = `☁️ ${user.displayName || "ユーザー"} さん（クラウド保存中）`;
   const { doc, getDoc, setDoc } = fb.fs;
@@ -586,13 +617,28 @@ async function onAuth(user) {
   checkStreakBroken(); renderStats(); go(document.querySelector(".view.active").id.replace("view-", "") === "unit" ? "roadmap" : "home");
 }
 async function login() {
-  if (!fbConfigured || !fb) { toast("Firebase未設定のため、ゲストモードで全機能が使えます👤"); return; }
+  if (!fbConfigured) { toast("Firebase未設定のため、ゲストモードで全機能が使えます👤"); return false; }
+  if (!fb) { toast("ログイン機能を準備中です。数秒後にもう一度お試しください"); return false; }
   const { GoogleAuthProvider, signInWithPopup, signInWithRedirect } = fb.authMod;
   const provider = new GoogleAuthProvider();
-  try { await signInWithPopup(fb.auth, provider); }
-  catch (e) { if (e.code === "auth/popup-blocked") signInWithRedirect(fb.auth, provider); else toast("ログインに失敗しました"); }
+  try { await signInWithPopup(fb.auth, provider); return true; }
+  catch (e) {
+    if (e.code === "auth/popup-blocked") { localStorage.setItem(LS_ENTRY, "google"); signInWithRedirect(fb.auth, provider); return true; }
+    if (e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") toast(`ログインに失敗しました（${e.code || "error"}）`);
+    return false;
+  }
 }
-async function logout() { if (fb) { await fb.authMod.signOut(fb.auth); state = loadLocal(); renderStats(); go("home"); } }
+async function logout() {
+  if (!fb) return;
+  if (!confirm("ログアウトしますか？（記録はクラウドに保存されています）")) return;
+  clearTimeout(saveTimer);
+  await fb.authMod.signOut(fb.auth);
+  currentUser = null;
+  // 共有端末でも他人に記録が見えないよう、端末内のコピーを消す（クラウドには残っている）
+  state = defaultState(); localStorage.setItem(LS_KEY, JSON.stringify(state));
+  localStorage.removeItem(LS_ENTRY);
+  renderStats(); go("home"); setWelcome("choose");
+}
 
 /* ---------- アップデート確認 ---------- */
 async function checkUpdate(manual = false) {
@@ -617,6 +663,8 @@ function bind() {
   $("#continue-btn").onclick = () => { const n = UNITS.find(u => !unitProg(u.id).step2); n ? openUnit(n.id) : go("roadmap"); };
   $("#login-btn").onclick = login;
   $("#logout-btn").onclick = logout;
+  $("#welcome-google").onclick = enterWithGoogle;
+  $("#welcome-guest").onclick = enterAsGuest;
   $$(".theme-btn").forEach(b => b.onclick = () => {
     if (talk.running) return toast("会話中はテーマを変更できません");
     $$(".theme-btn").forEach(x => x.classList.remove("active")); b.classList.add("active"); talk.theme = b.dataset.theme;
@@ -654,6 +702,8 @@ function init() {
   $("#app-version").textContent = APP_VERSION;
   bind(); checkStreakBroken(); renderStats(); renderHome();
   initFirebase(); checkUpdate();
+  // ログイン確認が長引いたら（通信不良など）選択画面に戻す
+  setTimeout(() => { if (welcomeMode() === "loading" && !currentUser) setWelcome("choose"); }, 8000);
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(e => console.warn("SW登録失敗", e));
 }
 init();

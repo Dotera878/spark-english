@@ -52,7 +52,7 @@ body {
 
 /* ===== Header ===== */
 .update-banner {
-  position: sticky; top: 0; z-index: 50; display: flex; gap: 12px;
+  position: sticky; top: 0; z-index: 90; display: flex; gap: 12px;
   align-items: center; justify-content: center; flex-wrap: wrap;
   padding: 10px; color: #fff; font-weight: 800;
   background: linear-gradient(90deg, var(--purple), var(--blue));
@@ -211,10 +211,67 @@ input:focus { outline: none; border-color: var(--blue); }
 .modal-box h3 { margin-top: 0; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
 .toast {
-  position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%); z-index: 70;
+  position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%); z-index: 100;
   background: #333; color: #fff; padding: 12px 20px; border-radius: 99px; font-weight: 800;
   animation: fadeIn .25s; max-width: 90vw; text-align: center;
 }
+
+/* ===== Welcome（入り口） ===== */
+.welcome {
+  position: fixed; inset: 0; z-index: 80; display: flex; overflow-y: auto;
+  padding: calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));
+  color: #fff;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(137, 226, 25, .9) 0, transparent 45%),
+    radial-gradient(circle at 90% 95%, rgba(28, 176, 246, .55) 0, transparent 45%),
+    linear-gradient(160deg, #58cc02 0%, #46a302 100%);
+  animation: fadeIn .4s ease;
+}
+html[data-welcome="hide"] .welcome { display: none; }
+html:not([data-welcome="hide"]) body { overflow: hidden; }
+.welcome-inner { width: 100%; max-width: 420px; margin: auto; text-align: center; position: relative; }
+.mascot-wrap {
+  width: 168px; height: 168px; margin: 0 auto 6px; border-radius: 50%; overflow: hidden;
+  background: #fff; display: grid; place-items: center;
+  box-shadow: 0 8px 0 rgba(0, 0, 0, .12), 0 0 0 10px rgba(255, 255, 255, .22);
+  animation: floaty 3s ease-in-out infinite;
+}
+.mascot { width: 200px; height: 200px; max-width: none; }
+@keyframes floaty { 50% { transform: translateY(-8px); } }
+.welcome-title { font-size: 2.3rem; font-weight: 900; margin: 16px 0 2px; text-shadow: 0 3px 0 rgba(0, 0, 0, .12); }
+.welcome-catch { font-size: 1.1rem; font-weight: 800; margin: 0 0 18px; opacity: .95; }
+.welcome-features {
+  list-style: none; margin: 0 0 22px; padding: 12px 16px; text-align: left;
+  background: rgba(255, 255, 255, .16); border: 2px solid rgba(255, 255, 255, .3);
+  border-radius: 18px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.welcome-features li { display: flex; align-items: center; gap: 12px; padding: 6px 0; font-weight: 800; font-size: .95rem; }
+.welcome-features li span {
+  flex-shrink: 0; width: 38px; height: 38px; display: grid; place-items: center;
+  font-size: 1.25rem; background: #fff; border-radius: 12px;
+}
+.welcome-actions { display: flex; flex-direction: column; gap: 12px; }
+.btn-google {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: #fff; color: #3c3c3c; box-shadow: 0 5px 0 rgba(0, 0, 0, .18);
+}
+.btn-google svg { width: 24px; height: 24px; flex-shrink: 0; }
+.btn-ghost-white { background: transparent; color: #fff; border: 2px solid rgba(255, 255, 255, .75); box-shadow: 0 4px 0 rgba(0, 0, 0, .12); }
+.welcome-note { font-size: .78rem; line-height: 1.6; opacity: .92; margin: 4px 0 0; }
+.welcome-loading { display: none; align-items: center; justify-content: center; gap: 10px; padding: 24px; font-weight: 800; }
+html[data-welcome="loading"] .welcome-actions { display: none; }
+html[data-welcome="loading"] .welcome-loading { display: flex; }
+.spinner {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, .4); border-top-color: #fff; animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.sparkle { position: absolute; font-size: 1.6rem; pointer-events: none; animation: twinkle 2.6s ease-in-out infinite; }
+.sparkle.s1 { top: 8%; left: 10%; }
+.sparkle.s2 { top: 14%; right: 12%; animation-delay: .6s; }
+.sparkle.s3 { bottom: 18%; left: 8%; animation-delay: 1.2s; font-size: 1.2rem; }
+.sparkle.s4 { bottom: 10%; right: 10%; animation-delay: 1.8s; }
+@keyframes twinkle { 0%, 100% { opacity: .35; transform: scale(.85) rotate(-8deg); } 50% { opacity: 1; transform: scale(1.15) rotate(8deg); } }
 
 @media (max-width: 520px) {
   .brand-name { display: none; }

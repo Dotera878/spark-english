@@ -1,6 +1,6 @@
 // SparkEnglish Service Worker
-const CACHE = "sparkenglish-v1.0.1";
-const ASSETS = ["./", "./index.html", "./style.css", "./app.js", "./manifest.json", "./icon-192.png", "./icon-512.png"];
+const CACHE = "sparkenglish-v1.1.0";
+const ASSETS = ["./", "./index.html", "./style.css", "./app.js", "./manifest.json", "./icon-192.png", "./icon-512.png", "./mascot.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
