@@ -2,18 +2,20 @@
    SparkEnglish - app.js
    ※ APIキー類はコードに直書きしないこと。
    ========================================================= */
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "1.0.1";
 
-/* ---------- Firebase設定（プレースホルダー） ----------
-   使う場合はFirebaseコンソールの「ウェブアプリ設定」を貼り付けてください。
-   YOUR_API_KEY のままなら自動でゲストモード（localStorage保存）になります。 */
+/* ---------- Firebase設定 ----------
+   Firebaseコンソールの「ウェブアプリ設定」の値。
+   ※ firebaseConfig の apiKey はアプリ識別用の公開情報（秘密鍵ではない）。
+     データ保護は Firestore セキュリティルール（firestore.rules）で行う。
+   値を YOUR_API_KEY 等に戻すと自動でゲストモード（localStorage保存）になります。 */
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyCVh0lpIjrvmqiM_QzTUA9Y92xEw06O0LA",
+  authDomain: "spark-english-3cb91.firebaseapp.com",
+  projectId: "spark-english-3cb91",
+  storageBucket: "spark-english-3cb91.firebasestorage.app",
+  messagingSenderId: "516978899187",
+  appId: "1:516978899187:web:5d224e97f2c494f8a51f86",
 };
 const FB_VER = "13.3.0";
 const FB_BASE = `https://www.gstatic.com/firebasejs/${FB_VER}`;
